@@ -5,7 +5,7 @@ matches = arg.match(/-v\s*([^\s]*)/);
 if(matches != null) var _version = matches[1];
 
 // exit if name is not provided
-if(typeof name == 'undefined') {
+if(typeof _name == 'undefined') {
 	console.log('You should speciy the library name by using -n {name}');
 	process.exit(0);
 }
@@ -62,8 +62,7 @@ superagent.get(config.targetHost).end(function(err, res) {
 		process.exit(0);
 	}
 
-	var targetUrl = _url.resolve(targetHost, _cache[_name].href);
-//	var targetUrl = 'http://www.bootcdn.cn/async';
+	var targetUrl = _url.resolve(config.targetHost, _cache[_name].href);
 	var dest = _path.resolve(__dirname, config.dest);
 	console.log('Spider start. Fetch from %s.', targetUrl);
 	console.log('Put result to %s.', dest);
@@ -73,18 +72,32 @@ superagent.get(config.targetHost).end(function(err, res) {
 		if (err) return console.log('Failed. Detail: %s', err);
 
 		console.log('Page fetched.');
-		console.log('Page loading.');
+		console.log('Page loading...');
 
 		// TODO get right version
 
 		var $ = cheerio.load(res.text);
-		var targetVersion = "";
+		var availVersions = [];
+		var targetVersion = "", selector = "", index = 0;
 
 		// map version if version is not provided
 		if(typeof _version == 'undefined') targetVersion = $('#wrap .container h3:first-child').text();
 		else {
-			// TODO
+			// map versions
+			$('#wrap .container h3').each(function() {
+				availVersions.push($(this).text());
+			});
+
+			// exit if the version is not available
+			index = availVersions.indexOf(_version);
+			if(index < 0) {
+				console.log('The version you provided is not available.');
+				process.exit(0);
+			}
+			else targetVersion = _version;
 		}
+
+		selector = '#wrap .container table.table:nth-child(' + (index + 1) * 2 + ') p.library-url';
 
 		console.log('Target version: %s', targetVersion);
 
@@ -92,15 +105,15 @@ superagent.get(config.targetHost).end(function(err, res) {
 
 		console.log('Getting file targets for v%s...', targetVersion);
 
-		// TODO get selector by version
-
-		$('#wrap .container table.table:nth-child(2) p.library-url').each(function() {
+		// get available files
+		$(selector).each(function() {
 			filetargets.push($(this).text());
 		});
 
 		console.log('File targets getted.');
 		console.log('Start fetching files... limit: %s', config.concurrencyLimit);
 
+		// download files
 		async.mapLimit(filetargets, config.concurrencyLimit, function(url, callback) {
 			var destPath = _path.join(dest, url.replace(/^http:\/\/cdn.bootcss.com/, ''));
 			var destDir = destPath.slice(0, destPath.lastIndexOf('/'));

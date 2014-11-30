@@ -1,0 +1,15 @@
+{
+  "name": "Quiky",
+  "version": "1.0.0",
+  "description": "A spider for fetching js library.",
+  "repository": "https://github.com/leozdgao/Quiky.git",
+  "main": "app.js",
+  "author": "Leo.Gao",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^0.9.0",
+    "cheerio": "^0.18.0",
+    "mkdirp": "^0.5.0",
+    "superagent": "^0.21.0"
+  }
+}
