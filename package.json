@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "A spider for fetching js library.",
   "repository": "https://github.com/leozdgao/Quiky.git",
-  "main": "app.js",
+  "bin": {
+    "quiky": "bin/quiky"
+  },
   "author": "Leo.Gao",
   "license": "MIT",
   "dependencies": {
